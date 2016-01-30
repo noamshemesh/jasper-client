@@ -8,6 +8,7 @@ import logging
 
 import yaml
 import argparse
+import time
 
 from client import tts, stt, jasperpath, diagnose
 from client.conversation import Conversation
@@ -107,14 +108,20 @@ class Jasper(object):
                        stt_engine_class.get_active_instance())
 
     def run(self):
-        if 'first_name' in self.config:
-            salutation = ("How can I be of service, %s?"
-                          % self.config["first_name"])
+	hour = int(time.strftime("%H"))
+        
+	if hour > 6 and hour < 11:
+	    salutation = "Good morning"
+        elif hour >= 11 and hour < 16:
+	    salutation = "Good afternoon"
+        elif hour >= 16 and hour < 23:
+            salutation = "Good evening"
         else:
-            salutation = "How can I be of service?"
+            salutation = "Hi there"
+
         self.mic.say(salutation)
 
-        conversation = Conversation("JASPER", self.mic, self.config)
+        conversation = Conversation(self.config['persona'], self.mic, self.config)
         conversation.handleForever()
 
 if __name__ == "__main__":

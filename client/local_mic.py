@@ -13,7 +13,7 @@ class Mic:
         return
 
     def passiveListen(self, PERSONA):
-        return True, "JASPER"
+        return True, PERSONA 
 
     def activeListenToAllOptions(self, THRESHOLD=None, LISTEN=True,
                                  MUSIC=False):
