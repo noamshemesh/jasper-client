@@ -4,7 +4,7 @@ import re
 PRIORITY = 10
 WORDS = ["LIGHT", "LIGHTS", "ON", "OFF", "DIM", "WHITE", "FIRST", "SECOND", "THIRD", "FOURTH", "ALL"]
 
-template = re.compile(r'.*\b(turn|all|first|second|third|fourth)\b.*\blights\b.*\b(on|off|white|dim)\b.*', re.IGNORECASE)
+template = re.compile(r'(turn|all|first|second|third|fourth).*\Wlights?\W.*(on|off|white|dim)', re.IGNORECASE)
 
 words_to_numbers = {
     'turn': 0,
@@ -17,6 +17,7 @@ words_to_numbers = {
 
 
 def isValid(text):
+    print('testing in lights ' + text)
     return bool(template.search(text))
 
 

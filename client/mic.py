@@ -26,6 +26,9 @@ class Mic:
                               mode
         acive_stt_engine -- performs STT while Jasper is in active listen mode
         """
+        self.RATE = 44100
+        self.CHANNELS = 1
+        self.DEVICE_INDEX = 3
         self._logger = logging.getLogger(__name__)
         self.speaker = speaker
         self.passive_stt_engine = passive_stt_engine
@@ -36,6 +39,9 @@ class Mic:
         self._audio = pyaudio.PyAudio()
         self._logger.info("Initialization of PyAudio completed.")
 
+        for i in range(0, self._audio.get_device_count()): 
+	    print("device info " + str(i) + " " + str(self._audio.get_device_info_by_index(i)))
+      
     def __del__(self):
         self._audio.terminate()
 
@@ -48,17 +54,17 @@ class Mic:
 
         # TODO: Consolidate variables from the next three functions
         THRESHOLD_MULTIPLIER = 1.8
-        RATE = 16000
-        CHUNK = 512 
+        CHUNK = 8192 
 
         # number of seconds to allow to establish threshold
         THRESHOLD_TIME = 1
 
         # prepare recording stream
         stream = self._audio.open(format=pyaudio.paInt16,
-                                  channels=1,
-                                  rate=RATE,
+                                  channels=self.CHANNELS,
+                                  rate=self.RATE,
                                   input=True,
+				  input_device_index=self.DEVICE_INDEX, 
                                   frames_per_buffer=CHUNK)
 
         # stores the audio data
@@ -68,7 +74,7 @@ class Mic:
         lastN = [i for i in range(20)]
 
         # calculate the long run average, and thereby the proper threshold
-        for i in range(0, RATE / CHUNK * THRESHOLD_TIME):
+        for i in range(0, self.RATE / CHUNK * THRESHOLD_TIME):
 
             data = stream.read(CHUNK)
             frames.append(data)
@@ -93,8 +99,7 @@ class Mic:
         """
 
         THRESHOLD_MULTIPLIER = 1.8
-        RATE = 16000
-        CHUNK = 1024
+        CHUNK = 8192 
 
         # number of seconds to allow to establish threshold
         THRESHOLD_TIME = 1
@@ -104,9 +109,10 @@ class Mic:
 
         # prepare recording stream
         stream = self._audio.open(format=pyaudio.paInt16,
-                                  channels=1,
-                                  rate=RATE,
+                                  channels=self.CHANNELS,
+                                  rate=self.RATE,
                                   input=True,
+				  input_device_index=self.DEVICE_INDEX,
                                   frames_per_buffer=CHUNK)
 
         # stores the audio data
@@ -116,7 +122,7 @@ class Mic:
         lastN = [i for i in range(30)]
 
         # calculate the long run average, and thereby the proper threshold
-        for i in range(0, RATE / CHUNK * THRESHOLD_TIME):
+        for i in range(0, self.RATE / CHUNK * THRESHOLD_TIME):
 
             data = stream.read(CHUNK)
             frames.append(data)
@@ -136,7 +142,7 @@ class Mic:
         didDetect = False
 
         # start passively listening for disturbance above threshold
-        for i in range(0, RATE / CHUNK * LISTEN_TIME):
+        for i in range(0, self.RATE / CHUNK * LISTEN_TIME):
 
             data = stream.read(CHUNK)
             frames.append(data)
@@ -158,7 +164,7 @@ class Mic:
 
         # otherwise, let's keep recording for few seconds and save the file
         DELAY_MULTIPLIER = 1
-        for i in range(0, RATE / CHUNK * DELAY_MULTIPLIER):
+        for i in range(0, self.RATE / CHUNK * DELAY_MULTIPLIER):
 
             data = stream.read(CHUNK)
             frames.append(data)
@@ -171,7 +177,7 @@ class Mic:
             wav_fp = wave.open(f, 'wb')
             wav_fp.setnchannels(1)
             wav_fp.setsampwidth(pyaudio.get_sample_size(pyaudio.paInt16))
-            wav_fp.setframerate(RATE)
+            wav_fp.setframerate(self.RATE)
             wav_fp.writeframes(''.join(frames))
             wav_fp.close()
             f.seek(0)
@@ -202,9 +208,8 @@ class Mic:
             Returns a list of the matching options or None
         """
 
-        RATE = 16000
-        CHUNK = 1024
-        LISTEN_TIME = 12
+        CHUNK = 8192 
+        LISTEN_TIME = 8
 
         # check if no threshold provided
         if THRESHOLD is None:
@@ -214,9 +219,10 @@ class Mic:
 
         # prepare recording stream
         stream = self._audio.open(format=pyaudio.paInt16,
-                                  channels=1,
-                                  rate=RATE,
+                                  channels=self.CHANNELS,
+                                  rate=self.RATE,
                                   input=True,
+				  input_device_index=self.DEVICE_INDEX,
                                   frames_per_buffer=CHUNK)
 
         frames = []
@@ -224,7 +230,7 @@ class Mic:
         # generation
         lastN = [THRESHOLD * 1.2 for i in range(30)]
 
-        for i in range(0, RATE / CHUNK * LISTEN_TIME):
+        for i in range(0, self.RATE / CHUNK * LISTEN_TIME):
 
             data = stream.read(CHUNK)
             frames.append(data)
@@ -249,7 +255,7 @@ class Mic:
             wav_fp = wave.open(f, 'wb')
             wav_fp.setnchannels(1)
             wav_fp.setsampwidth(pyaudio.get_sample_size(pyaudio.paInt16))
-            wav_fp.setframerate(RATE)
+            wav_fp.setframerate(self.RATE)
             wav_fp.writeframes(''.join(frames))
             wav_fp.close()
             f.seek(0)

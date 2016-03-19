@@ -1,0 +1,1 @@
+/home/pi/lirc/lirc-stuff/jasper/Goodbye.py
